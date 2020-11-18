@@ -2,80 +2,43 @@ package com.victor.sociotorcedor.service.impl;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.victor.sociotorcedor.adapter.CampanhaAdapter;
 import com.victor.sociotorcedor.dto.CampanhaDTO;
 import com.victor.sociotorcedor.dto.SocioDTO;
 import com.victor.sociotorcedor.entity.Socio;
-import com.victor.sociotorcedor.entity.SocioCampanha;
-import com.victor.sociotorcedor.repository.SocioCampanhaRepository;
 import com.victor.sociotorcedor.repository.SocioRepository;
+import com.victor.sociotorcedor.service.SocioCampanhaService;
 import com.victor.sociotorcedor.service.SocioService;
 
 @Service
 @Transactional
 public class SocioServiceImpl implements SocioService {
 	
-	private CampanhaAdapter campanhaAdapter;
 	private SocioRepository socioRepository;
-	private SocioCampanhaRepository socioCampanhaRepository;
+	private SocioCampanhaService socioCampanhaService;
 	
 	@Autowired
-	public SocioServiceImpl(CampanhaAdapter campanhaAdapter, SocioRepository socioRepository, SocioCampanhaRepository socioCampanhaRepository) {
-		this.campanhaAdapter = campanhaAdapter;
+	public SocioServiceImpl(SocioRepository socioRepository, SocioCampanhaService socioCampanhaService) {
 		this.socioRepository = socioRepository;
-		this.socioCampanhaRepository = socioCampanhaRepository;
+		this.socioCampanhaService = socioCampanhaService;
 	}
 
 	@Override
-	public Long criar(SocioDTO socioDTO) {
-		Socio socio = new Socio(socioDTO);
+	public List<CampanhaDTO> criar(SocioDTO socioDTO) {
 		
-		this.socioRepository.save(socio);
+		Optional<Socio> optionalSocio = this.socioRepository.findByEmail(socioDTO.getEmail());
 		
-		return socio.getId();
-	}
-
-	@HystrixCommand(fallbackMethod = "fallbackListaCampanhas")
-	@Override
-	public List<CampanhaDTO> listarCampanhas(Long idSocio) {
-		Socio socio = getSocioOrThrow(idSocio);
-		return this.campanhaAdapter.listarCampanhas(socio.getIdTimeCoracao());
-	}
-
-	@Override
-	public void associarCampanha(Long idSocio, Long idCampanha) {
-		Socio socio = getSocioOrThrow(idSocio);
-		SocioCampanha socioCampanha = new SocioCampanha(idSocio, idCampanha, socio.getIdTimeCoracao());
-		this.socioCampanhaRepository.save(socioCampanha);
-	}
-	
-	private Socio getSocioOrThrow(Long idSocio) {
-		Optional<Socio> optionalSocio = this.socioRepository.findById(idSocio);
-		
-		if(!optionalSocio.isPresent()) {
-			throw new EntityNotFoundException();
+		if(optionalSocio.isPresent()) {
+			return this.socioCampanhaService.associarCampanhasFaltantes(optionalSocio.get());
 		}
 		
-		return optionalSocio.get();
-	}
-	
-	public List<CampanhaDTO> fallbackListaCampanhas(Long idSocio){
-		Socio socio = getSocioOrThrow(idSocio);
+		Socio socio = new Socio(socioDTO);
+		this.socioRepository.save(socio);
 		
-		List<Long> idsCampanha = this.socioCampanhaRepository.findDistincIdCampanhatByIdTimeCoracao(socio.getIdTimeCoracao());
-		
-		return idsCampanha.stream()
-			.map(idCampanha -> new CampanhaDTO(idCampanha)
-		).collect(Collectors.toList());
+		return this.socioCampanhaService.associarTodasCampanhas(socio);
 	}
-
 }

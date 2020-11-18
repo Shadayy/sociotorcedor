@@ -14,4 +14,7 @@ public interface SocioCampanhaRepository extends JpaRepository<SocioCampanha, So
 	
 	@Query("SELECT DISTINCT id.idCampanha FROM SocioCampanha WHERE id.idTimeCoracao = :idTimeCoracao")
 	List<Long> findDistincIdCampanhatByIdTimeCoracao(@Param("idTimeCoracao") Long idTimeCoracao);
+	
+	@Query("SELECT id.idCampanha FROM SocioCampanha WHERE id.idSocio = :idSocio")
+	List<Long> findAllIdCampanhaByIdIdSocio(Long idSocio);
 }

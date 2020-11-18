@@ -7,10 +7,5 @@ import com.victor.sociotorcedor.dto.SocioDTO;
 
 public interface SocioService {
 
-	Long criar(SocioDTO socioDTO);
-
-	List<CampanhaDTO> listarCampanhas(Long idSocio);
-
-	void associarCampanha(Long idSocio, Long idCampanha);
-
+	List<CampanhaDTO> criar(SocioDTO socioDTO);
 }
