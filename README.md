@@ -4,7 +4,7 @@ A aplicação é uma aplicação RestFul Java com Spring Boot que utiliza banco 
 Todas as APIs podem ser utilizadas diretamente pelo Swagger.
 
 # Componentes
-*  Seridor Tomcat
+*  Servidor Tomcat
     *  http://localhost:8081
 *  Documentação Swagger
     *  http://localhost:8081/swagger-ui.html#/
