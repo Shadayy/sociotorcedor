@@ -3,7 +3,10 @@ package com.victor.sociotorcedor.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.victor.sociotorcedor.adapter.CampanhaAdapter;
 import com.victor.sociotorcedor.dto.CampanhaDTO;
 import com.victor.sociotorcedor.entity.Socio;
@@ -11,10 +14,18 @@ import com.victor.sociotorcedor.entity.SocioCampanha;
 import com.victor.sociotorcedor.repository.SocioCampanhaRepository;
 import com.victor.sociotorcedor.service.SocioCampanhaService;
 
+@Service
+@Transactional
 public class SocioCampanhaServiceImpl implements SocioCampanhaService {
 	
 	private CampanhaAdapter campanhaAdapter;
 	private SocioCampanhaRepository socioCampanhaRepository;
+	
+	@Autowired
+	public SocioCampanhaServiceImpl(CampanhaAdapter campanhaAdapter, SocioCampanhaRepository socioCampanhaRepository) {
+		this.campanhaAdapter = campanhaAdapter;
+		this.socioCampanhaRepository = socioCampanhaRepository;
+	}
 	
 	@Override
 	public List<CampanhaDTO> associarCampanhasFaltantes(Socio socio) {
@@ -22,9 +33,9 @@ public class SocioCampanhaServiceImpl implements SocioCampanhaService {
 		List<Long> campanhasAssociadas = this.socioCampanhaRepository.findAllIdCampanhaByIdIdSocio(socio.getId());
 		
 		List<CampanhaDTO> campanhasNaoAssociadas = todasCampanhas.stream()
-			.filter(campanhaDTO ->{
-				return !(campanhasAssociadas.contains(campanhaDTO.getId()));
-			}).collect(Collectors.toList());
+			.filter(campanhaDTO ->
+				!(campanhasAssociadas.contains(campanhaDTO.getId()))
+			).collect(Collectors.toList());
 		
 		associarCampanha(socio, campanhasNaoAssociadas);
 		
@@ -40,18 +51,8 @@ public class SocioCampanhaServiceImpl implements SocioCampanhaService {
 		return todasCampanhas;
 	}
 	
-	@HystrixCommand(fallbackMethod = "fallbackListaCampanhas")
-	private List<CampanhaDTO> listarCampanhasTimeCoracao(Long idTimeCoracao) {
+	public List<CampanhaDTO> listarCampanhasTimeCoracao(Long idTimeCoracao) {
 		return this.campanhaAdapter.listarCampanhas(idTimeCoracao);
-	}
-	
-	@SuppressWarnings("unused")
-	private List<CampanhaDTO> fallbackListaCampanhas(Long idTimeCoracao){
-		List<Long> idsCampanha = this.socioCampanhaRepository.findDistincIdCampanhatByIdTimeCoracao(idTimeCoracao);
-		
-		return idsCampanha.stream()
-			.map(idCampanha -> new CampanhaDTO(idCampanha)
-		).collect(Collectors.toList());
 	}
 	
 	private void associarCampanha(Socio socio, List<CampanhaDTO> campanhasDTO) {

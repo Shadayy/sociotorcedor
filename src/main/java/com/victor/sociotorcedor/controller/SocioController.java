@@ -29,6 +29,6 @@ public class SocioController {
 	
 	@PostMapping
 	public ResponseEntity<List<CampanhaDTO>> criar(@Valid @RequestBody SocioDTO socioDTO) {
-		return new ResponseEntity<List<CampanhaDTO>>(socioService.criar(socioDTO), HttpStatus.CREATED);
+		return new ResponseEntity<>(socioService.criar(socioDTO), HttpStatus.CREATED);
 	}
 }

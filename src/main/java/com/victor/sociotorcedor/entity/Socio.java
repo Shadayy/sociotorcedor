@@ -41,6 +41,10 @@ public class Socio {
 	}
 	
 	public Socio(SocioDTO socioDTO) {
+		merge(socioDTO);
+	}
+	
+	public void merge(SocioDTO socioDTO) {
 		setDataNascimento(socioDTO.getDataNascimento());
 		setEmail(socioDTO.getEmail());
 		setIdTimeCoracao(socioDTO.getIdTimeCoracao());
