@@ -12,9 +12,9 @@ Todas as APIs podem ser utilizadas diretamente pelo Swagger.
     *  http://localhost:8081/h2
 
 # Estrutura da aplicação
-*  A aplicação faz uso do Flyway para upgrade do BD
+*  A aplicação faz uso do `Flyway` para upgrade do BD
 *  A aplicação consome a API de Campanhas por `http` através da configuração `endpoint.campanha.listar`
-*  A aplicação utiliza Hystrix como Circuit Breaker para tratar indisponibilidade da API de Campanhas
+*  A aplicação utiliza `Hystrix` como `Circuit Breaker` para tratar indisponibilidade da API de Campanhas
 
 # Estrutura do projeto
 
